@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="es" style="--accent: var(--practica);"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación educativa — Mapa interactivo (editable)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&amp;family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#f6f2e9; --board-2:#efe9dc;
+    --ink:#2c2823; --ink-soft:#6a6258;
+    --marker:#c92a6a; --tecnica:#2f6ea3; --practica:#1f8a6d;
+    --ochre:#b07d1a; --terra:#b0432f; --line:#c7b89c;
+    --accent:var(--marker);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:'Spectral',Georgia,serif;color:var(--ink);
+    background:radial-gradient(120% 90% at 12% 0%, #fbf8f1 0%, var(--board) 45%, var(--board-2) 100%);
+    -webkit-font-smoothing:antialiased;}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:radial-gradient(rgba(0,0,0,.018) 1px, transparent 1px);background-size:5px 5px;mix-blend-mode:multiply;}
+  .wrap{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding:22px 18px 60px}
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .titles h1{font-family:'Caveat',cursive;font-weight:700;font-size:clamp(34px,6vw,58px);line-height:.92;margin:0;color:var(--marker);letter-spacing:.5px;}
+  .titles p{margin:.25em 0 0;color:var(--ink-soft);font-size:clamp(13px,2.4vw,16px);max-width:54ch}
+  .toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .btn{font-family:'Spectral',serif;font-size:13px;cursor:pointer;border:1.5px solid var(--ink);background:transparent;color:var(--ink);padding:7px 13px;border-radius:22px;transition:.18s;white-space:nowrap;}
+  .btn:hover{background:var(--ink);color:var(--board)}
+  .btn.accenty{border-color:var(--marker);color:var(--marker)}
+  .btn.accenty:hover{background:var(--marker);color:#fff}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 2px 6px;font-size:13px;color:var(--ink-soft)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block;border:2px solid rgba(0,0,0,.12)}
+  .editbar{font-size:12.5px;color:var(--ink-soft);margin:4px 2px 12px;display:none;background:#fffaf0;border:1px solid #ecdfc4;border-radius:10px;padding:8px 12px}
+  .editing .editbar{display:block}
+  .canvas{position:relative;width:100%;border:2px solid #d9cdb4;border-radius:18px;
+    background:linear-gradient(180deg,#fffdf8,#f3eee2);box-shadow:0 18px 40px -28px rgba(0,0,0,.4), inset 0 1px 0 #fff;overflow:hidden;}
+  .editing .canvas{border-color:var(--marker);border-style:dashed}
+  svg{display:block;width:100%;height:auto;touch-action:manipulation}
+
+  .spoke{fill:none;stroke-linecap:round;opacity:.5}
+  .neq-line{fill:none;stroke:var(--ink-soft);stroke-width:2;stroke-dasharray:3 7;opacity:.6}
+  .card-head{cursor:pointer}
+  .card-head .hbg{transition:filter .18s}
+  .card-head:hover .hbg{filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+  .card-head .htxt{font-family:'Caveat',cursive;font-weight:700;fill:#fff;pointer-events:none}
+  .card-body-bg{fill:#fffdf8;stroke-width:1.6}
+  .leafrow{cursor:pointer}
+  .leafrow .rbg{fill:transparent;transition:fill .15s}
+  .leafrow:hover .rbg{fill:rgba(0,0,0,.05)}
+  .leafrow .ltxt{font-family:'Spectral',serif;font-size:16px;fill:var(--ink);pointer-events:none}
+  .central{cursor:pointer}
+  .central .cbg{transition:filter .18s}
+  .central:hover .cbg{filter:drop-shadow(0 8px 14px rgba(0,0,0,.22))}
+  .central .ctxt{font-family:'Caveat',cursive;font-weight:700;fill:#fff;pointer-events:none}
+  .neq{font-family:'Caveat',cursive;font-weight:700;fill:var(--ink);font-size:40px;pointer-events:none}
+  .editing .card-head, .editing .leafrow, .editing .central{cursor:pointer}
+  .addhint{font-family:'Spectral',serif;font-size:14px;fill:var(--marker)}
+
+  .appear{opacity:0;animation:pop .5s ease forwards}
+  @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .spoke{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1.2s ease forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+
+  #scrim{position:fixed;inset:0;background:rgba(30,26,20,.34);backdrop-filter:blur(2px);opacity:0;visibility:hidden;transition:.25s;z-index:40}
+  #scrim.on{opacity:1;visibility:visible}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:min(460px,94vw);z-index:50;
+    background:linear-gradient(180deg,#fffdf8,#f5f0e6);border-left:6px solid var(--accent);
+    box-shadow:-22px 0 50px -28px rgba(0,0,0,.55);transform:translateX(102%);
+    transition:transform .32s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;padding:26px 26px 30px;overflow-y:auto;}
+  .drawer.on{transform:none}
+  .drawer .close{align-self:flex-end;border:none;background:none;font-size:30px;line-height:1;color:var(--ink-soft);cursor:pointer;padding:0;margin:-6px -4px 2px}
+  .drawer .close:hover{color:var(--ink)}
+  .d-kicker{font-size:12.5px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:2px}
+  .d-title{font-family:'Caveat',cursive;font-weight:700;font-size:40px;line-height:.95;margin:0 0 12px;color:var(--ink)}
+  .d-summary{font-size:16.5px;line-height:1.55;margin:0 0 18px}
+  .d-leaves{margin:0 0 20px;display:flex;flex-direction:column;gap:11px}
+  .d-leaf{padding-left:16px;position:relative;font-size:15px;line-height:1.45}
+  .d-leaf::before{content:"";position:absolute;left:0;top:.55em;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+  .d-leaf b{font-weight:600}
+  .d-source{margin-top:auto;border-top:1px solid #e2d9c6;padding-top:14px;font-size:13.5px;font-style:italic;color:var(--ink-soft);line-height:1.5}
+  .d-source strong{font-style:normal;color:var(--ink);display:block;margin-bottom:3px;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+
+  /* formularios de edición */
+  #editView{display:none;flex-direction:column}
+  .ed-back{align-self:flex-start;background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;margin-bottom:8px}
+  .ed-h{font-family:'Caveat',cursive;font-weight:700;font-size:34px;margin:0 0 14px;color:var(--ink)}
+  .ed-field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+  .ed-field label{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-soft)}
+  .ed-field input,.ed-field textarea,.ed-field select{font-family:'Spectral',serif;font-size:15px;padding:8px 10px;border:1.5px solid #d9cdb4;border-radius:8px;background:#fffdf8;color:var(--ink);width:100%}
+  .ed-field input:focus,.ed-field textarea:focus,.ed-field select:focus{outline:none;border-color:var(--accent)}
+  .ed-field textarea{min-height:68px;resize:vertical;line-height:1.4}
+  .ed-grouplabel{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-soft);margin:2px 0 8px}
+  .ed-items{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+  .ed-item{border:1px solid #e2d9c6;border-radius:10px;padding:10px 10px 8px;background:rgba(255,255,255,.55);position:relative}
+  .ed-item input,.ed-item textarea{font-family:'Spectral',serif;font-size:14px;padding:6px 8px;border:1.5px solid #e0d6c0;border-radius:7px;width:100%;margin-bottom:6px;background:#fff;color:var(--ink)}
+  .ed-item textarea{min-height:48px;resize:vertical;line-height:1.35}
+  .ed-del{position:absolute;top:6px;right:8px;border:none;background:none;color:#b0432f;cursor:pointer;font-size:15px;line-height:1}
+  .ed-addbtn{font-family:'Spectral',serif;font-size:12.5px;border:1.5px dashed var(--accent);color:var(--accent);background:transparent;border-radius:18px;padding:5px 11px;cursor:pointer;align-self:flex-start}
+  .ed-addbtn:hover{background:var(--accent);color:#fff}
+  .ed-row-actions{display:flex;gap:8px;justify-content:space-between;margin-top:16px;border-top:1px solid #e2d9c6;padding-top:14px}
+  .ed-danger{border:1.5px solid #b0432f;color:#b0432f;background:transparent;border-radius:20px;padding:7px 13px;cursor:pointer;font-size:13px;font-family:'Spectral',serif}
+  .ed-danger:hover{background:#b0432f;color:#fff}
+  .ed-primary{border:1.5px solid var(--ink);background:var(--ink);color:#fff;border-radius:20px;padding:7px 16px;cursor:pointer;font-size:13px;font-family:'Spectral',serif}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:9px 18px;border-radius:22px;font-size:13px;opacity:0;transition:.25s;z-index:70;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+  .hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);font-size:12.5px;color:var(--ink-soft);background:rgba(255,253,248,.85);padding:5px 14px;border-radius:20px;border:1px solid #e6dcc6;pointer-events:none}
+  .editing .hint{display:none}
+  @media (max-width:560px){ .hint{display:none} }
+</style>
+</head>
+<body class="">
+<div class="wrap">
+  <header class="top">
+    <div class="titles">
+      <h1 id="mapTitle">Evaluación educativa</h1>
+      <p id="mapSubtitle">Mapa conceptual interactivo. Tocá el centro, cualquier rama o cualquier ítem de las listas para ver su desarrollo y la fuente.</p>
+    </div>
+    <div class="toolbar">
+      <button class="btn accenty present-only" id="editBtn">✎ Editar</button>
+      <button class="btn present-only" id="fsBtn">⛶ Pantalla completa</button>
+      <button class="btn accenty edit-only" id="presentBtn">◉ Presentar</button>
+      <button class="btn edit-only" id="addBranchBtn">＋ Rama</button>
+      <button class="btn edit-only" id="downloadBtn">📥 Descargar copia</button>
+      <button class="btn edit-only" id="exportBtn">Exportar .json</button>
+      <button class="btn edit-only" id="importBtn">Importar .json</button>
+      <button class="btn edit-only" id="restoreBtn">↺ Restaurar</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden="">
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--marker)"></i> Núcleo / caracterización</span>
+    <span><i class="dot" style="background:var(--tecnica)"></i> Racionalidad técnica · positivista</span>
+    <span><i class="dot" style="background:var(--practica)"></i> Racionalidad práctica · sociohistórica</span>
+    <span><i class="dot" style="background:var(--ochre)"></i> Tipos · usos · agentes</span>
+    <span><i class="dot" style="background:var(--terra)"></i> Patologías</span>
+  </div>
+
+  <div class="editbar" id="editbar">
+    <b>Modo edición.</b> Tocá el centro, una rama o un ítem para editar su texto. Podés agregar/eliminar ítems y ramas, y cambiar colores. Los cambios se guardan automáticamente en este navegador. Para compartir el mapa con tus cambios, usá <b>«Descargar copia»</b> (genera un archivo HTML nuevo) o <b>«Exportar .json»</b> como respaldo.
+  </div>
+
+  <div class="canvas" id="canvas">
+    <svg id="map" viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Mapa conceptual de la evaluación educativa"></svg>
+    <div class="hint">Hacé clic en los nodos · Esc para cerrar</div>
+  </div>
+</div>
+
+<div id="scrim" class=""></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <button class="close" id="closeBtn" aria-label="Cerrar">×</button>
+  <div id="readView" style="display: block;">
+    <div class="d-kicker" id="dKicker">Racionalidad técnica </div>
+    <h2 class="d-title" id="dTitle">Resultado</h2>
+    <p class="d-summary" id="dSummary">Es el producto final del proceso de enseñanza y aprendizaje, expresado en el grado de cumplimiento de los objetivos previamente establecidos.
+La evaluación se centra en medir y comprobar estos resultados para determinar qué conocimientos</p>
+    <div class="d-leaves" id="dLeaves"></div>
+    <div class="d-source" id="dSource" style="display: none;"></div>
+  </div>
+  <div id="editView" style="display: none;"></div>
+</aside>
+<div class="toast" id="toast">Copia descargada</div>
+
+<script type="application/json" id="map-data">{"title":"Evaluación educativa","subtitle":"Mapa conceptual interactivo. Tocá el centro, cualquier rama o cualquier ítem de las listas para ver su desarrollo y la fuente.","center":{"color":"marker","kicker":"Concepto central","title":"Evaluación educativa","summary":"La evaluación educativa no se limita a medir, controlar o calificar los aprendizajes. Constituye un proceso de construcción de conocimiento acerca de la enseñanza y el aprendizaje, que culmina en la formulación de un juicio de valor orientado a comprender, interpretar y mejorar las prácticas educativas.\n\nEl sentido de la evaluación no está dado, sino que se construye en la interacción entre los sujetos que participan del proceso educativo. En función de la intencionalidad que la orienta, de sus finalidades y de los usos que se hacen de sus resultados, es posible distinguir dos racionalidades evaluativas contrapuestas.\n","bullets":[["Dos racionalidades","La técnica (control) y la práctica (mejora) organizan todo el campo."],["Cuatro preguntas","Las preguntas por el qué, el cómo, el para qué y el quién recorren cada rama."]],"source":""},"branches":[{"id":"patologias","cell":[0,0],"color":"practica","title":"Racionalidad técnica ","summary":"Está vinculada a una mirada positivista de la educación. Desde esta perspectiva, la evaluación se centra en medir resultados, registrar datos y verificar si los objetivos fueron alcanzados. \nPredomina una lógica más cuantitativa, asociada a la evaluación sumativa y al control. \nEl docente aparece como quien posee el conocimiento y el alumno ocupa un lugar más pasivo.\n","source":"","leaves":[{"label":"Control","text":"Su objetivo es verificar si algo cumple con una norma o un modelo preestablecido.\nSe verifica que la respuesta sea la correcta y se mide la diferencia con lo esperado. \nDe esta manera, podemos decir que el control se basa en un solo referente, una norma, y es ajeno al proceso de aprendizaje","color":"marker"},{"label":"Acreditación","text":"Proceso mediante el cual se certifica el logro de objetivos o aprendizajes previamente establecidos, a partir de la medición y comprobación de resultados. \nSu función principal es verificar y validar los conocimientos adquiridos por los estudiantes. ","bullets":[]},{"label":"Sanción","text":"Es el uso de la evaluación como mecanismo de control y disciplina, mediante el cual se premian o castigan determinados desempeños según el grado de cumplimiento de las normas, objetivos o expectativas establecidas.","bullets":[]},{"label":"Resultado","text":"Es el producto final del proceso de enseñanza y aprendizaje, expresado en el grado de cumplimiento de los objetivos previamente establecidos.\nLa evaluación se centra en medir y comprobar estos resultados para determinar qué conocimientos","bullets":[]},{"label":"Medición","text":"Es el proceso de cuantificar el rendimiento o los aprendizajes de los estudiantes mediante instrumentos que permiten asignar valores numéricos a sus desempeños. \nSu propósito es obtener datos objetivos y comparables para verificar el grado de logro de los objetivos previamente establecidos.","bullets":[]},{"label":"Acción instrumental ","text":"La evaluación es un instrumento de\ncontrol y selección.","bullets":[]},{"label":"Concepción del conocimiento","text":"La visión positivista entiende como algo objetivo y externo al sujeto. \n\nSe basa en la selección de contenidos considerados verdaderos, que los estudiantes deben aprender mediante la memorización. \n\nEstos saberes suelen presentarse de forma aislada del contexto y se evalúan a través de test o exámenes que buscan medir y cuantificar los aprendizajes.","bullets":[]},{"label":"Examen ","text":"Es un instrumento o técnica de recolección de información que permite obtener datos sobre los aprendizajes de los estudiantes en un momento determinado.","bullets":[],"color":"marker"}]},{"id":"usos","cell":[2,0],"color":"practica","title":"Racionalidad práctica","summary":"El \"por qué\" (intenciones) y el \"para qué\" (uso de los resultados) determinan el tipo de evaluación: está siempre ligada a un contexto decisional. Camilloni la concibe como mecanismo interno que regula la enseñanza y se fusiona con el aprendizaje.","source":"Camilloni, A. W. de (Las funciones de la evaluación) · Bertoni, Poggi y Teobaldo.","leaves":[{"label":"Mejora ","text":"Consiste en utilizar la evaluación para transformar y enriquecer la práctica educativa, promoviendo la reflexión, la participación y la introducción de cambios que favorezcan una educación más justa y de mayor calidad.","bullets":[],"color":"marker"},{"label":"Diálogo","text":"El diálogo es un proceso de comunicación e intercambio entre los distintos actores educativos que permite comprender, interpretar y valorar los procesos de enseñanza y aprendizaje.","bullets":[]},{"label":"Reflexión","text":"Es el proceso de análisis crítico sobre las prácticas, decisiones y resultados educativos con el fin de comprenderlos y mejorarlos. \nEn la evaluación, permite revisar tanto los aprendizajes de los estudiantes como las acciones de enseñanza, favoreciendo la toma de decisiones fundamentadas para la mejora.","bullets":[]},{"label":"Proceso","text":"Es el conjunto de acciones, interacciones y transformaciones que se desarrollan a lo largo del tiempo durante la enseñanza y el aprendizaje. \n\nDesde esta perspectiva, la evaluación no se centra únicamente en los resultados finales, sino en el seguimiento y comprensión de ese recorrido para favorecer la mejora.","bullets":[]},{"label":"Integración","text":"Es la articulación de los distintos elementos que intervienen en el proceso educativo aprendizajes, enseñanza, contexto, actores y experiencias para comprender la realidad educativa de manera global y no fragmentada."},{"label":"Acción Comunicativa","text":"La evaluación se pone al servicio del aprendizaje, respetando el proceso y el contexto.\n\n","bullets":[]},{"label":"Concepción del conocimiento","text":"Construcción sociohistórica del conocimiento sostiene que el saber se construye social e históricamente a través de la interacción con otros. \n\nAprender implica comprender y relacionar significados, desarrollar pensamiento crítico y mantener una coherencia epistemológica entre enseñanza y evaluación. \nDesde esta mirada, el error es una oportunidad para aprender y comprender los procesos de construcción del conocimiento.","bullets":[]},{"label":"Evaluación","text":"Consiste en la atribución de un juicio de valor a una realidad observada; es  multirreferencial y está siempre abierta.\nSe trata de entender, no solo de medir o comparar con una norma.","bullets":[],"color":"marker"}]},{"id":"caracteristicas","cell":[0,1],"color":"terra","title":"Características","summary":"","source":"","leaves":[{"label":"Según la racionalidad práctica","text":"La evaluación educativa es un proceso complejo, intencional y continuo que permite emitir juicios de valor para comprender y mejorar la enseñanza y el aprendizaje. \nSe entiende como una acción comunicativa basada en el diálogo y la participación. \nEs cualitativa, procesual, democrática y contextualizada, ya que valora los procesos, considera el contexto y está al servicio del sujeto que aprende. \nAdemás, tiene un carácter formativo, orientador y comprometido con los principios educativos.","bullets":[]},{"label":"Según la racionalidad técnica ","text":"La evaluación educativa se concibe como un proceso de medición y control orientado a verificar el grado de cumplimiento de objetivos previamente establecidos. \n\nSe centra principalmente en los resultados, utiliza instrumentos estandarizados y cuantificables, y busca obtener datos objetivos para clasificar, acreditar o seleccionar a los estudiantes. \n\nEl docente ocupa un rol central en la evaluación y el contexto tiene escasa relevancia en la interpretación de los resultados.","bullets":[]}]},{"id":"tecnica","cell":[0,2],"color":"tecnica","title":"Ab - usos","summary":"Santos Guerra utiliza el término ab-uso para señalar que la evaluación muchas veces se emplea de manera incorrecta, alejándose de su finalidad educativa. \n\nEn lugar de servir para comprender y mejorar los aprendizajes, se usa para controlar, sancionar, clasificar o ejercer poder sobre los estudiantes.\n\nA estas desviaciones del sentido formativo de la evaluación se las denomina PATOLOGÍAS.","source":"","leaves":[{"label":"Descontextualización ","text":"Se ignoran las condiciones reales donde ocurre el aprendizaje y no se consideran el contexto, las circunstancias ni el momento adecuado de la evaluación","bullets":[["Solo se evalúa a las personas.",""],["Se evalúa descontextualizadamente.",""],["No se evalúa desde fuera.",""],["Se evalúa distemporalmente.",""]]},{"label":"Falta de criterios","text":"No hay claridad o reflexión sobre cómo evaluar, la evaluación carece de revisión, coherencia y participación","bullets":[["Se utilizan instrumentos inadecuados.",""],["Se evalúa de forma incoherente con el proceso de enseñanza-aprendizaje.",""],["Se evalúa estereotipadamente.",""],["No se hace autoevaluación.",""],["No se hace paraevaluación (coevaluación).",""],["No se hace metaevaluación.",""]]},{"label":"Resultado","text":"Se simplifica la complejidad del aprendizaje y se reduce la evaluación a una parte del aprendizaje y se dejan afuera otros aspectos importantes","bullets":[["Solo se evalúa al alumno.",""],["Solo se evalúan los resultados.",""],["Solo se evalúan los conocimientos",""],["Solo se evalúan los resultados directos",""],["Solo se evalúan los efectos observables",""],["Solo se evalúan principalmente la vertiente negativa ",""],["Se evalúa competitivamente",""],["Se evalúa cuantitativamente",""]]},{"label":"Castigo","text":"La evaluación deja de estar al servicio del aprendizaje y se convierte en una herramienta de control y dominación.","bullets":[["No se evalúa éticamente.",""],["Se evalúa para controlar",""],["Se evalúa para conservar",""],["Se evalúa unidireccionalmente",""]]}]},{"id":"practica","cell":[2,2],"color":"practica","title":"Usos ","summary":"Son aquellas formas de emplearla para comprender la realidad educativa y mejorarla. \nLa evaluación deja de ser un fin en sí mismo y se convierte en una herramienta para reflexionar, aprender y transformar las prácticas.","source":"","leaves":[{"label":"Recolección de datos","text":"Obtención de información sobre los procesos de enseñanza y aprendizaje mediante observaciones, trabajos, exámenes, registros u otros instrumentos.","bullets":[]},{"label":"Sistematización de datos","text":"Organización y ordenamiento de la información recolectada para facilitar su interpretación y análisis."},{"label":"Análisis ","text":"Interpretación de los datos obtenidos para comprender la realidad educativa, identificar logros, dificultades y tomar decisiones fundamentadas."},{"label":"Toma de decisiones ","text":"Elección de acciones o estrategias a partir del análisis de la información obtenida en la evaluación, con el propósito de mejorar la enseñanza y favorecer los aprendizajes"}]},{"id":"r1780872351534","cell":[2,1],"color":"ochre","title":"Proceso de valoración","summary":"La evaluación implica la construcción de juicios de valor a partir de referentes y finalidades que orientan la interpretación de la realidad evaluada.","source":"","leaves":[{"label":"Normotipo","text":"Es el tipo de referente utilizado, que se construye a partir de los objetivos de aprendizaje que se desean alcanzar, los criterios de evaluación establecidos por el docente o la institución, las concepciones pedagógicas sobre qué significa enseñar y aprender, el contexto educativo y las características de los estudiantes, así como las expectativas y finalidades de la evaluación. \nBertoni sostiene que la evaluación no es completamente neutra. \n\n","bullets":[["Nomotécnica ","Comparación con una norma o grupo."],["Idiográfica ","Comparación con uno mismo y su propio progreso."]]},{"label":"Funcionalidad ","text":"Es la finalidad o el uso que se le da a la evaluación dentro del proceso educativo. \nHace referencia a para qué se evalúa y qué decisiones se tomarán a partir de la información obtenida.","bullets":[["Formativa","Para mejorar y orientar los procesos de enseñanza y aprendizaje"],["Sumativa","Para valorar los resultados alcanzados y acreditar aprendizajes"],["Función social","La evaluación cumple una función social en tanto acredita o certifica los aprendizajes, estableciendo\njerarquías y legitimando posiciones en la sociedad."],["Función de control ","Mediante la evaluación, las instituciones ejercen control sobre el cumplimiento de objetivos y normas,\nasegurando la coherencia entre lo planificado y lo realizado."]]}]},{"id":"r1781529836904","cell":[1,2],"color":"ochre","title":"Rol docente en la evaluación ","summary":"El docente interviene en el proceso evaluativo tomando decisiones que articulan la enseñanza, el aprendizaje y el acompañamiento de los estudiantes en sus diferentes momentos.","source":"","leaves":[{"label":"Aprendizaje y enseñanza","text":"La enseñanza implica las acciones intencionales que realiza el docente para favorecer la construcción de conocimientos, mientras que el aprendizaje es el proceso mediante el cual los estudiantes construyen, comprenden y resignifican esos conocimientos. \n\nSon procesos interrelacionados e inseparables, ya que la enseñanza orienta y promueve el aprendizaje, y el aprendizaje da sentido a la enseñanza.","bullets":[["Agentes","Son las personas o actores que participan e intervienen en un proceso educativo. \n\nEn la evaluación, los principales agentes son docentes y los estudiantes ya que influyen en la enseñanza, el aprendizaje y la toma de decisiones."],["Autoevaluación ","Evaluación que realizan docentes y estudiantes sobre su propio proceso, desempeño o aprendizaje, reflexionando sobre sus logros y dificultades."],["Heteroevaluación","Evaluación realizada por una persona sobre otra. En el ámbito educativo, generalmente es la evaluación que realiza el docente sobre los estudiantes."],["Coevaluación ","Evaluación realizada entre los alumnos, donde los participantes valoran y analizan mutuamente sus desempeños o producciones."]]},{"label":"Retroalimentación","text":"Información que se brinda el docentes al estudiante para que ambos reconozcan avances, dificultades y aspectos a mejorar.\n","bullets":[]},{"label":"Temporalización ","text":"Es la clasificación de la evaluación según el momento en que se realiza dentro del proceso de enseñanza y aprendizaje. Permite distinguir cuándo se evalúa y con qué propósito.","bullets":[["Diagnóstica ","Se realiza al inicio de un proceso educativo, curso o unidad. \nSu finalidad es conocer los saberes previos, intereses, necesidades y características de los estudiantes para planificar la enseñanza de manera adecuada."],["Procesual ","Se lleva a cabo durante el desarrollo del proceso de enseñanza y aprendizaje. \nPermite hacer un seguimiento continuo de los avances y dificultades de los estudiantes para introducir ajustes y mejoras oportunamente."],["Final","Se realiza al concluir un período, unidad o curso. Su propósito es valorar los aprendizajes alcanzados y el grado de cumplimiento de los objetivos propuestos."]]}]}]}</script>
+
+<script>
+const COL={marker:'var(--marker)',tecnica:'var(--tecnica)',practica:'var(--practica)',ochre:'var(--ochre)',terra:'var(--terra)',ink:'var(--ink)'};
+const COLNAMES={marker:'Rosa (núcleo)',tecnica:'Azul (técnica)',practica:'Verde (práctica)',ochre:'Ocre (tipos/usos)',terra:'Terracota (patologías)',ink:'Gris (neutro)'};
+const LS_KEY='mapaEvalData_v1';
+const cv=c=>COL[c]||COL.ink;
+
+let DATA, ORIGINAL, editMode=false;
+
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function loadData(){
+  ORIGINAL=JSON.parse(document.getElementById('map-data').textContent);
+  let raw=null; try{raw=localStorage.getItem(LS_KEY);}catch(e){}
+  DATA = raw? JSON.parse(raw) : clone(ORIGINAL);
+}
+function save(){
+  const j=JSON.stringify(DATA);
+  document.getElementById('map-data').textContent=j;
+  try{localStorage.setItem(LS_KEY,j);}catch(e){}
+  toast('Guardado ✓');
+}
+let toastT;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),1100);}
+
+/* ---------- LAYOUT / RENDER ---------- */
+const SVGNS='http://www.w3.org/2000/svg';
+const svg=document.getElementById('map');
+function el(t,a){const e=document.createElementNS(SVGNS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+const CX=800, CY=600;
+const COLX=[300,800,1300], ROWY=[250,600,960];
+const W=326, HEAD=52, ROWH=34, PADT=12, PADB=14;
+function cardGeom(b){
+  const x=COLX[b.cell[0]], yc=ROWY[b.cell[1]];
+  const n=b.leaves.length;
+  const h=HEAD+PADT+Math.max(n,1)*ROWH+PADB;
+  return {x,yc,n,h,top:yc-h/2,left:x-W/2};
+}
+
+function render(){
+  svg.innerHTML='';
+  // spokes
+  let di=0;
+  DATA.branches.forEach(b=>{
+    const g=cardGeom(b); const hx=g.x, hy=g.top+HEAD/2;
+    const mx=(CX+hx)/2,my=(CY+hy)/2, dx=hx-CX,dy=hy-CY,L=Math.hypot(dx,dy)||1, off=22;
+    const cxp=mx-dy/L*off, cyp=my+dx/L*off;
+    const p=el('path',{d:`M ${CX} ${CY} Q ${cxp} ${cyp} ${hx} ${hy}`,class:'spoke',stroke:cv(b.color),'stroke-width':2.6});
+    p.style.animationDelay=(0.1+di*0.05)+'s'; di++; svg.appendChild(p);
+  });
+  // ≠ entre las dos racionalidades (se identifican por el título de la rama)
+  const _norm=s=>(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const bt=DATA.branches.find(b=>{const t=_norm(b.title);return t.includes('racionalidad')&&t.includes('tecnica');});
+  const bp=DATA.branches.find(b=>{const t=_norm(b.title);return t.includes('racionalidad')&&t.includes('practica');});
+  if(bt&&bp){
+    const A=cardGeom(bt), B=cardGeom(bp);
+    const dir=B.x>=A.x?1:-1;
+    const ax=A.x+dir*(W/2), ay=A.yc, bx=B.x-dir*(W/2), by=B.yc;
+    const mx=(ax+bx)/2, my=(ay+by)/2;
+    const L=Math.hypot(bx-ax,by-ay)||1, ux=(bx-ax)/L, uy=(by-ay)/L, gap=38;
+    svg.appendChild(el('path',{d:`M ${ax} ${ay} L ${mx-ux*gap} ${my-uy*gap}`,class:'neq-line'}));
+    svg.appendChild(el('path',{d:`M ${mx+ux*gap} ${my+uy*gap} L ${bx} ${by}`,class:'neq-line'}));
+    const neq=el('text',{x:mx,y:my+14,class:'neq','text-anchor':'middle'}); neq.textContent='≠'; svg.appendChild(neq);
+  }
+  // tarjetas
+  DATA.branches.forEach(b=>{
+    const g=cardGeom(b); const grp=el('g',{});
+    grp.appendChild(el('rect',{x:g.left,y:g.top+HEAD-14,width:W,height:g.h-HEAD+14,rx:14,class:'card-body-bg',stroke:cv(b.color),'stroke-opacity':.35}));
+    const head=el('g',{class:'card-head',tabindex:'0',role:'button'});
+    head.appendChild(el('rect',{x:g.left,y:g.top,width:W,height:HEAD,rx:HEAD/2,class:'hbg',fill:cv(b.color)}));
+    const ht=el('text',{x:g.x,y:g.top+HEAD/2+10,class:'htxt','text-anchor':'middle','font-size': (b.title||'').length>20?25:29});
+    ht.textContent=b.title||'(sin título)'; head.appendChild(ht);
+    head.addEventListener('click',()=> editMode?openBranchEdit(b):openBranch(b));
+    head.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); editMode?openBranchEdit(b):openBranch(b);}});
+    grp.appendChild(head);
+    b.leaves.forEach((lf,i)=>{
+      const ry=g.top+HEAD+PADT+i*ROWH;
+      const row=el('g',{class:'leafrow',tabindex:'0',role:'button'});
+      row.appendChild(el('rect',{x:g.left+8,y:ry,width:W-16,height:ROWH-4,rx:8,class:'rbg'}));
+      row.appendChild(el('circle',{cx:g.left+24,cy:ry+(ROWH-4)/2,r:4.5,fill:cv(lf.color||b.color)}));
+      const tx=el('text',{x:g.left+38,y:ry+(ROWH-4)/2+5.5,class:'ltxt'}); tx.textContent=lf.label; row.appendChild(tx);
+      row.addEventListener('click',()=> editMode?openLeafEdit(b,lf):openLeaf(b,lf));
+      row.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); editMode?openLeafEdit(b,lf):openLeaf(b,lf);}});
+      grp.appendChild(row);
+    });
+    svg.appendChild(grp);
+  });
+  // centro
+  const cw=262,ch=126, cc=DATA.center;
+  const g=el('g',{class:'central',tabindex:'0',role:'button'});
+  g.appendChild(el('rect',{x:CX-cw/2,y:CY-ch/2,width:cw,height:ch,rx:ch/2,class:'cbg',fill:cv(cc.color)}));
+  g.appendChild(el('rect',{x:CX-cw/2+7,y:CY-ch/2+7,width:cw-14,height:ch-14,rx:(ch-14)/2,fill:'none',stroke:'#fff','stroke-opacity':.55,'stroke-width':1.5}));
+  const words=(cc.title||'').toUpperCase().split(' ');
+  const mid=Math.ceil(words.length/2);
+  const l1=words.slice(0,mid).join(' '), l2=words.slice(mid).join(' ');
+  const fs = (cc.title||'').length>22?30:40;
+  const t1=el('text',{x:CX,y:l2?CY-6:CY+12,class:'ctxt','text-anchor':'middle','font-size':fs}); t1.textContent=l1;
+  g.appendChild(t1);
+  if(l2){const t2=el('text',{x:CX,y:CY+34,class:'ctxt','text-anchor':'middle','font-size':fs}); t2.textContent=l2; g.appendChild(t2);}
+  g.addEventListener('click',()=> editMode?openCenterEdit():openCenter());
+  g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault(); editMode?openCenterEdit():openCenter();}});
+  svg.appendChild(g);
+}
+
+/* ---------- PANEL (lectura) ---------- */
+const drawer=document.getElementById('drawer'), scrim=document.getElementById('scrim');
+function setAccent(color){document.documentElement.style.setProperty('--accent',cv(color));}
+function showRead(){document.getElementById('readView').style.display='block';document.getElementById('editView').style.display='none';openDrawer();}
+function showEdit(){document.getElementById('readView').style.display='none';document.getElementById('editView').style.display='flex';openDrawer();}
+function openDrawer(){drawer.classList.add('on');scrim.classList.add('on');drawer.setAttribute('aria-hidden','false');}
+function closePanel(){drawer.classList.remove('on');scrim.classList.remove('on');drawer.setAttribute('aria-hidden','true');}
+
+function paint({color,kicker,title,summary,bullets,source}){
+  setAccent(color);
+  document.getElementById('dKicker').textContent=kicker||'';
+  document.getElementById('dTitle').textContent=title||'';
+  document.getElementById('dSummary').textContent=summary||'';
+  const lv=document.getElementById('dLeaves'); lv.innerHTML='';
+  (bullets||[]).forEach(([h,b2])=>{const d=document.createElement('div');d.className='d-leaf';d.innerHTML='<b>'+esc(h)+'.</b> '+esc(b2);lv.appendChild(d);});
+  const _src=document.getElementById('dSource'); _src.innerHTML=''; _src.style.display='none';
+  showRead();
+}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function openCenter(){const c=DATA.center; paint({color:c.color,kicker:c.kicker,title:c.title,summary:c.summary,bullets:c.bullets,source:c.source});}
+function openBranch(b){paint({color:b.color,kicker:'Rama del mapa',title:b.title,summary:b.summary,bullets:b.leaves.map(l=>[l.label,l.text]),source:b.source});}
+function openLeaf(b,lf){paint({color:lf.color||b.color,kicker:b.title,title:lf.label,summary:lf.text||'',bullets:lf.bullets||[],source:lf.source||b.source});}
+
+/* ---------- EDICIÓN ---------- */
+function field(labelText,node){
+  const w=document.createElement('div'); w.className='ed-field';
+  const l=document.createElement('label'); l.textContent=labelText; w.appendChild(l); w.appendChild(node); return w;
+}
+function inputEl(val,oninput){const i=document.createElement('input'); i.value=val||''; i.addEventListener('input',()=>oninput(i.value)); return i;}
+function areaEl(val,oninput){const t=document.createElement('textarea'); t.value=val||''; t.addEventListener('input',()=>oninput(t.value)); return t;}
+function colorSelect(val,onchange,allowInherit){
+  const s=document.createElement('select');
+  if(allowInherit){const o=document.createElement('option');o.value='__inherit';o.textContent='(hereda de la rama)';s.appendChild(o);}
+  Object.keys(COLNAMES).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=COLNAMES[k];s.appendChild(o);});
+  s.value = val|| (allowInherit?'__inherit':'marker');
+  s.addEventListener('change',()=>onchange(s.value)); return s;
+}
+function addBtn(txt,fn){const b=document.createElement('button');b.className='ed-addbtn';b.textContent=txt;b.onclick=fn;return b;}
+function group(labelTxt,childrenNode){const w=document.createElement('div');const l=document.createElement('div');l.className='ed-grouplabel';l.textContent=labelTxt;w.appendChild(l);w.appendChild(childrenNode);return w;}
+
+function backLink(txt,fn){const b=document.createElement('button');b.className='ed-back';b.textContent='‹ '+txt;b.onclick=fn;return b;}
+function edH(txt){const h=document.createElement('div');h.className='ed-h';h.textContent=txt;return h;}
+
+function openCenterEdit(){
+  const c=DATA.center; setAccent(c.color);
+  const v=document.getElementById('editView'); v.innerHTML='';
+  v.appendChild(edH('Editar centro'));
+  v.appendChild(field('Título del centro', inputEl(c.title,val=>{c.title=val;save();render();})));
+  v.appendChild(field('Bajada (kicker)', inputEl(c.kicker,val=>{c.kicker=val;save();})));
+  v.appendChild(field('Resumen', areaEl(c.summary,val=>{c.summary=val;save();})));
+  const items=document.createElement('div'); items.className='ed-items';
+  c.bullets=c.bullets||[];
+  c.bullets.forEach((bp)=> items.appendChild(pairRow(bp,()=>{c.bullets=c.bullets.filter(x=>x!==bp);save();openCenterEdit();})) );
+  v.appendChild(group('Puntos', items));
+  v.appendChild(addBtn('＋ Agregar punto',()=>{c.bullets.push(['Nuevo','']);save();openCenterEdit();}));
+  v.appendChild(field('Fuente', areaEl(c.source,val=>{c.source=val;save();})));
+  const act=document.createElement('div'); act.className='ed-row-actions';
+  const done=document.createElement('button'); done.className='ed-primary'; done.textContent='Listo'; done.onclick=closePanel;
+  act.appendChild(document.createElement('span')); act.appendChild(done); v.appendChild(act);
+  showEdit();
+}
+
+function pairRow(pair,onDel){
+  const box=document.createElement('div'); box.className='ed-item';
+  box.appendChild(inputElPH(pair[0],'Título',val=>{pair[0]=val;save();render();}));
+  box.appendChild(areaElPH(pair[1],'Detalle',val=>{pair[1]=val;save();}));
+  const del=document.createElement('button'); del.className='ed-del'; del.textContent='✕'; del.title='Eliminar'; del.onclick=onDel; box.appendChild(del);
+  return box;
+}
+function inputElPH(val,ph,oninput){const i=document.createElement('input');i.placeholder=ph;i.value=val||'';i.addEventListener('input',()=>oninput(i.value));return i;}
+function areaElPH(val,ph,oninput){const t=document.createElement('textarea');t.placeholder=ph;t.value=val||'';t.addEventListener('input',()=>oninput(t.value));return t;}
+
+function openBranchEdit(b){
+  setAccent(b.color);
+  const v=document.getElementById('editView'); v.innerHTML='';
+  v.appendChild(edH('Editar rama'));
+  v.appendChild(field('Título de la rama', inputEl(b.title,val=>{b.title=val;save();render();})));
+  v.appendChild(field('Color', colorSelect(b.color,val=>{b.color=val;save();render();})));
+  v.appendChild(field('Resumen', areaEl(b.summary,val=>{b.summary=val;save();})));
+  v.appendChild(field('Fuente', areaEl(b.source,val=>{b.source=val;save();})));
+  const items=document.createElement('div'); items.className='ed-items';
+  b.leaves.forEach(lf=> items.appendChild(leafRow(b,lf)) );
+  v.appendChild(group('Ítems', items));
+  v.appendChild(addBtn('＋ Agregar ítem',()=>{b.leaves.push({label:'Nuevo ítem',text:''});save();render();openBranchEdit(b);}));
+  const act=document.createElement('div'); act.className='ed-row-actions';
+  const del=document.createElement('button'); del.className='ed-danger'; del.textContent='Eliminar rama';
+  del.onclick=()=>{ if(confirm('¿Eliminar la rama «'+(b.title||'')+'» y todos sus ítems?')){DATA.branches=DATA.branches.filter(x=>x!==b);save();render();closePanel();} };
+  const done=document.createElement('button'); done.className='ed-primary'; done.textContent='Listo'; done.onclick=closePanel;
+  act.appendChild(del); act.appendChild(done); v.appendChild(act);
+  showEdit();
+}
+function leafRow(b,lf){
+  const box=document.createElement('div'); box.className='ed-item';
+  box.appendChild(inputElPH(lf.label,'Etiqueta',val=>{lf.label=val;save();render();}));
+  box.appendChild(areaElPH(lf.text,'Explicación',val=>{lf.text=val;save();}));
+  const open=addBtn(lf.bullets&&lf.bullets.length?('Editar subpuntos ('+lf.bullets.length+')'):'Más opciones / subpuntos',()=>openLeafEdit(b,lf));
+  box.appendChild(open);
+  const del=document.createElement('button'); del.className='ed-del'; del.textContent='✕'; del.title='Eliminar ítem';
+  del.onclick=()=>{b.leaves=b.leaves.filter(x=>x!==lf);save();render();openBranchEdit(b);};
+  box.appendChild(del);
+  return box;
+}
+
+function openLeafEdit(b,lf){
+  setAccent(lf.color||b.color);
+  const v=document.getElementById('editView'); v.innerHTML='';
+  v.appendChild(backLink('Volver a «'+(b.title||'')+'»',()=>openBranchEdit(b)));
+  v.appendChild(edH('Editar ítem'));
+  v.appendChild(field('Etiqueta', inputEl(lf.label,val=>{lf.label=val;save();render();})));
+  v.appendChild(field('Explicación', areaEl(lf.text,val=>{lf.text=val;save();})));
+  v.appendChild(field('Color del punto', colorSelect(lf.color,val=>{ if(val==='__inherit')delete lf.color; else lf.color=val; save();render(); }, true)));
+  const items=document.createElement('div'); items.className='ed-items';
+  lf.bullets=lf.bullets||[];
+  lf.bullets.forEach(bp=> items.appendChild(pairRow(bp,()=>{lf.bullets=lf.bullets.filter(x=>x!==bp); if(!lf.bullets.length)delete lf.bullets; save();openLeafEdit(b,lf);})) );
+  v.appendChild(group('Subpuntos (opcional)', items));
+  v.appendChild(addBtn('＋ Agregar subpunto',()=>{lf.bullets=lf.bullets||[];lf.bullets.push(['Subpunto','']);save();openLeafEdit(b,lf);}));
+  const act=document.createElement('div'); act.className='ed-row-actions';
+  const del=document.createElement('button'); del.className='ed-danger'; del.textContent='Eliminar ítem';
+  del.onclick=()=>{b.leaves=b.leaves.filter(x=>x!==lf);save();render();openBranchEdit(b);};
+  const done=document.createElement('button'); done.className='ed-primary'; done.textContent='Listo'; done.onclick=closePanel;
+  act.appendChild(del); act.appendChild(done); v.appendChild(act);
+  showEdit();
+}
+
+/* ---------- MODO / HEADER ---------- */
+function setHeader(){document.getElementById('mapTitle').textContent=DATA.title;document.getElementById('mapSubtitle').textContent=DATA.subtitle;}
+function setEdit(on){
+  editMode=on; document.body.classList.toggle('editing',on);
+  const h1=document.getElementById('mapTitle'), sub=document.getElementById('mapSubtitle');
+  if(on){
+    h1.contentEditable=true; sub.contentEditable=true;
+    h1.onblur=()=>{DATA.title=h1.textContent.trim();save();};
+    sub.onblur=()=>{DATA.subtitle=sub.textContent.trim();save();};
+  } else {
+    h1.contentEditable=false; sub.contentEditable=false; closePanel();
+  }
+}
+
+document.getElementById('editBtn').onclick=()=>setEdit(true);
+document.getElementById('presentBtn').onclick=()=>setEdit(false);
+document.getElementById('addBranchBtn').onclick=()=>{
+  const order=[[1,0],[2,1],[1,2],[0,1],[2,0],[2,2],[0,2],[0,0]];
+  const used=new Set(DATA.branches.map(b=>b.cell.join(',')));
+  const free=order.find(c=>!used.has(c.join(',')));
+  if(!free){toast('El mapa admite hasta 8 ramas');return;}
+  const b={id:'r'+Date.now(),cell:free,color:'ochre',title:'Nueva rama',summary:'',source:'',leaves:[{label:'Ítem 1',text:''}]};
+  DATA.branches.push(b); save(); render(); openBranchEdit(b);
+};
+document.getElementById('restoreBtn').onclick=()=>{
+  if(confirm('Esto descarta TODOS tus cambios y vuelve al mapa original. ¿Seguir?')){
+    DATA=clone(ORIGINAL); try{localStorage.removeItem(LS_KEY);}catch(e){}
+    save(); setHeader(); render(); closePanel(); toast('Mapa restaurado');
+  }
+};
+document.getElementById('exportBtn').onclick=()=>{
+  downloadBlob(JSON.stringify(DATA,null,2),'mapa-evaluacion-datos.json','application/json');
+  toast('Datos exportados');
+};
+document.getElementById('importBtn').onclick=()=>document.getElementById('importFile').click();
+document.getElementById('importFile').onchange=(e)=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const d=JSON.parse(r.result); if(!d.branches||!d.center)throw 0; DATA=d; save(); setHeader(); render(); closePanel(); toast('Datos importados'); }catch(err){ alert('El archivo no es un JSON de mapa válido.'); } };
+  r.readAsText(f); e.target.value='';
+};
+document.getElementById('downloadBtn').onclick=()=>{
+  document.getElementById('map-data').textContent=JSON.stringify(DATA);
+  const cl=document.documentElement.cloneNode(true);
+  cl.querySelector('#map').innerHTML='';
+  cl.querySelector('body').classList.remove('editing');
+  cl.querySelectorAll('[contenteditable]').forEach(n=>n.removeAttribute('contenteditable'));
+  cl.querySelector('#mapTitle').textContent=DATA.title;
+  cl.querySelector('#mapSubtitle').textContent=DATA.subtitle;
+  const dr=cl.querySelector('#drawer'); dr.classList.remove('on'); dr.setAttribute('aria-hidden','true');
+  cl.querySelector('#scrim').classList.remove('on');
+  cl.querySelector('#editView').innerHTML='';
+  const html='<!DOCTYPE html>\n'+cl.outerHTML;
+  downloadBlob(html,'mapa_evaluacion_educativa.html','text/html');
+  toast('Copia descargada');
+};
+function downloadBlob(content,name,type){
+  const blob=new Blob([content],{type:type+';charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>{try{URL.revokeObjectURL(a.href);}catch(e){}},2000);
+}
+
+document.getElementById('closeBtn').addEventListener('click',closePanel);
+scrim.addEventListener('click',closePanel);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
+document.getElementById('fsBtn').addEventListener('click',()=>{const c=document.documentElement; if(!document.fullscreenElement){(c.requestFullscreen||c.webkitRequestFullscreen).call(c);}else{document.exitFullscreen();}});
+
+/* init */
+loadData(); setHeader(); render();
+</script>
+
+
+</body></html>
