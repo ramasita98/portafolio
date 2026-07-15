@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio: Ramiro Batibulli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --bg-main: #f8fafc;
+        }
+
+        body { 
+            font-family: 'Montserrat', sans-serif; 
+            background-color: var(--bg-main); 
+            color: #334155;
+            scroll-behavior: smooth;
+        }
+        
+        .serif { font-family: 'Libre+Baskerville', serif; }
+        
+        .page { display: none; }
+        .page.active { display: block; animation: slideUp 0.5s ease-out; }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
+        }
+
+        .card-hito {
+            background: white;
+            border: 1px solid #f1f5f9;
+            padding: 24px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .card-hito:hover {
+            border-color: var(--primary-light);
+            background-color: #ffffff;
+            transform: scale(1.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .img-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+    </style>
+</head>
+<body class="pb-32">
+
+    <!-- HEADER -->
+    <header class="fixed top-0 w-full z-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-900 rounded-lg flex items-center justify-center text-white">
+                <i class="fa-solid fa-graduation-cap text-xs"></i>
+            </div>
+            <span class="font-bold text-slate-800 text-xs tracking-tight uppercase">Evaluación de los Aprendizajes</span>
+        </div>
+        <span class="badge">Ramiro Batibulli</span>
+    </header>
+
+    <main class="mt-28 px-6 max-w-2xl mx-auto">
+
+        <!-- PÁGINA 1: INICIO -->
+        <section id="inicio" class="page active text-center py-12">
+            <span class="text-blue-600 font-bold tracking-[0.2em] text-[10px] uppercase mb-4 block">Portafolio de proceso</span>
+            <h1 class="serif text-5xl md:text-6xl text-slate-900 mb-6 leading-tight">Desarmando la <span class="text-blue-900 italic">Evaluación</span></h1>
+            <p class="text-slate-400 text-lg font-light mb-12">Un ejercicio de metacognición sobre la teoría y la práctica</p>
+            
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 text-left mb-12">
+                <div class="grid grid-cols-2 gap-6 text-sm">
+                    <div>
+                        <p class="text-slate-400 mb-1">Autor</p>
+                        <p class="font-semibold text-slate-800">Ramiro Batibulli</p>
+                    </div>
+                    <div>
+                        <p class="text-slate-400 mb-1">Institución</p>
+                        <p class="font-semibold text-slate-800">I.S.F.D. N° 127</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="showPage('presentacion')" class="btn-primary w-full">
+                Ingresar a mi Portafolio <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- PÁGINA 2: CARTA DE PRESENTACIÓN -->
+        <section id="presentacion" class="page">
+            <h2 class="serif text-3xl text-slate-900 mb-8">Carta de presentación</h2>
+            
+            <div class="space-y-6 text-slate-600 leading-relaxed text-lg text-justify">
+                <p>Este portafolio es el resultado de un largo camino de reconstrucción conceptual. Mi objetivo fue poner en diálogo ocho textos fundamentales (Camilloni, Casanova, Santos Guerra, entre otros) para sintetizar qué entendemos hoy por evaluación educativa.</p>
+                
+                <p>Lo armo convencido de que el aprendizaje no es lineal. Para llegar al mapa interactivo final, tuve que atravesar dudas, errores de jerarquía y debates internos. Este espacio me permite mirar hacia atrás y valorar no solo el producto, sino las decisiones que tomamos en el camino.</p>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-900 p-6 rounded-r-2xl my-8 italic">
+                    <p class="text-blue-900">
+                        "En este recorrido, el trabajo colaborativo fue clave. Junto a dos compañeras, nos sumamos para confrontar nuestras propias interpretaciones y construir un saber compartido."
+                    </p>
+                </div>
+
+                <p>A continuación, presento los hitos que considero más significativos de este proceso, desde los primeros garabatos digitales hasta la defensa oral de nuestra propuesta.</p>
+            </div>
+
+            <button onclick="showPage('indice')" class="btn-primary mt-12 w-full">Explorar el recorrido</button>
+        </section>
+
+        <!-- PÁGINA 3: ÍNDICE DE HITOS -->
+        <section id="indice" class="page">
+            <h2 class="serif text-3xl text-slate-900 mb-10">Recorrido del portafolio</h2>
+            <div class="grid grid-cols-1 gap-4">
+                <div onclick="showPage('hito1')" class="card-hito">
+                    <span class="text-2xl font-bold text-slate-200">01</span>
+                    <span class="font-medium text-slate-700">El caos inicial: Boceto digital</span>
+                </div>
+                <div onclick="showPage('hito2')" class="card-hito">
+                    <span class="text-2xl font-bold text-slate-200">02</span>
+                    <span class="font-medium text-slate-700">El papel y la investigación autónoma</span>
+                </div>
+                <div onclick="showPage('hito3')" class="card-hito">
+                    <span class="text-2xl font-bold text-slate-200">03</span>
+                    <span class="font-medium text-slate-700">La mirada externa: Devolución de la profesora</span>
+                </div>
+                <div onclick="showPage('hito4')" class="card-hito">
+                    <span class="text-2xl font-bold text-slate-200">04</span>
+                    <span class="font-medium text-slate-700">Consolidación del mapa interactivo</span>
+                </div>
+                <div onclick="showPage('hito5')" class="card-hito">
+                    <span class="text-2xl font-bold text-slate-200">05</span>
+                    <span class="font-medium text-slate-700">La defensa oral: Traducir lo reticular</span>
+                </div>
+                <div onclick="showPage('reflexion')" class="card-hito bg-slate-900 text-white border-none mt-4">
+                    <i class="fa-solid fa-lightbulb text-yellow-400"></i>
+                    <span class="font-bold">Reflexión Final</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- HITO 1 -->
+        <section id="hito1" class="page">
+            <button onclick="showPage('indice')" class="text-blue-900 text-xs font-bold mb-8 uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i> Volver</button>
+            <h2 class="serif text-3xl text-slate-900 mb-6">1. El primer boceto digital</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="img-container"><img src="hito1a.PNG"></div>
+                <div class="img-container"><img src="hito1b.PNG"></div>
+            </div>
+            
+            <div class="mt-8 space-y-6 text-slate-600 text-justify">
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">Por qué este momento</h4>
+                <p>Elegí este momento porque representa mi primer contacto con la teoría de <b>Novak</b>. Intenté volcar todo lo leído sobre evaluación en una estructura reticular, pero me encontré con la rigidez de la herramienta digital y mi propia confusión conceptual.</p>
+                
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">El aprendizaje del error</h4>
+                <p>Al analizar este boceto, me di cuenta de que estaba mezclando niveles. Ponía "según el momento" y "diagnóstica" como si fueran lo mismo, sin entender que uno es el criterio y el otro la categoría. Este "error" fue fundamental para obligarme a releer a <b>Casanova</b> y entender las taxonomías de la evaluación.</p>
+            </div>
+
+            <div class="mt-12 flex justify-between">
+                <span></span>
+                <button onclick="showPage('hito2')" class="btn-primary">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- HITO 2 -->
+        <section id="hito2" class="page">
+            <button onclick="showPage('indice')" class="text-blue-900 text-xs font-bold mb-8 uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i> Volver</button>
+            <h2 class="serif text-3xl text-slate-900 mb-6">2. El papel y la investigación autónoma</h2>
+            
+            <div class="img-container"><img src="hito2.JPG"></div>
+            
+            <div class="mt-8 space-y-6 text-slate-600 text-justify">
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">La libertad del trazo analógico</h4>
+                <p>Abandonar lo digital me permitió "pensar con las manos". En esta etapa, el mapa empezó a crecer. Pero lo más importante fue una duda personal: estaba usando el término "racionalidad práctica" asociándolo a la ética del deber de Kant (lo que uno *debe* hacer), pero sentía que algo no cerraba con el enfoque de la materia.</p>
+                
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">Investigación propia</h4>
+                <p>Decidí investigar por mi cuenta y descubrí que la "racionalidad práctica" en este contexto pedagógico remite a la **Acción Comunicativa de Habermas**. Entender que la evaluación es un proceso de diálogo y entendimiento, y no solo un imperativo moral, cambió por completo el eje de mi trabajo y lo que luego discutimos en grupo.</p>
+            </div>
+
+            <div class="mt-12 flex justify-between">
+                <button onclick="showPage('hito1')" class="text-slate-400 font-bold text-xs uppercase">Anterior</button>
+                <button onclick="showPage('hito3')" class="btn-primary">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- HITO 3 -->
+        <section id="hito3" class="page">
+            <button onclick="showPage('indice')" class="text-blue-900 text-xs font-bold mb-8 uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i> Volver</button>
+            <h2 class="serif text-3xl text-slate-900 mb-6">3. La mirada externa: Devolución</h2>
+            
+            <div class="img-container"><img src="hito3.JPG"></div>
+            
+            <div class="mt-8 space-y-6 text-slate-600 text-justify">
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">Evaluación como aprendizaje</h4>
+                <p>Este hito es crucial porque experimenté en carne propia lo que <b>Álvarez Méndez</b> propone: la evaluación como oportunidad de aprendizaje. La profesora no solo corrigió conceptos, sino que evaluó nuestro mapa con criterios explícitos: coherencia, relación de conceptos y uso de normas.</p>
+                <p>Ver mis propios errores marcados en rosa me permitió entender que la distinción entre "acción instrumental" y "acción comunicativa" era el corazón de nuestra propuesta. Fue el momento en que el mapa dejó de ser un dibujo para convertirse en una red de sentidos.</p>
+            </div>
+
+            <div class="mt-12 flex justify-between">
+                <button onclick="showPage('hito2')" class="text-slate-400 font-bold text-xs uppercase">Anterior</button>
+                <button onclick="showPage('hito4')" class="btn-primary">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- HITO 4 -->
+        <section id="hito4" class="page">
+            <button onclick="showPage('indice')" class="text-blue-900 text-xs font-bold mb-8 uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i> Volver</button>
+            <h2 class="serif text-3xl text-slate-900 mb-6">4. El mapa final interactivo</h2>
+            
+            <div class="img-container h-80 bg-slate-100 flex items-center justify-center">
+                <div class="text-center">
+                    <i class="fa-solid fa-diagram-project text-5xl text-blue-900 mb-4 opacity-30"></i>
+                    <p class="text-xs font-bold text-blue-900 uppercase tracking-widest">Recurso Interactivo</p>
+                    <a href="mapa_interactivo.html" target="_blank" class="text-sm text-blue-600 font-semibold hover:underline mt-4 block">Explorar Mapa Completo</a>
+                </div>
+            </div>
+            
+            <div class="mt-8 space-y-6 text-slate-600 text-justify">
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">Sintetizar a los autores</h4>
+                <p>Lograr esta versión final nos exigió un ejercicio de síntesis extremo. Decidimos no poner los nombres de los autores (Camilloni, Díaz Barriga, etc.) dentro de los nodos para priorizar la fluidez de las proposiciones. Aprendí que un mapa conceptual exitoso es aquel que puede leerse casi como un texto continuo a través de sus palabras de enlace.</p>
+            </div>
+
+            <div class="mt-12 flex justify-between">
+                <button onclick="showPage('hito3')" class="text-slate-400 font-bold text-xs uppercase">Anterior</button>
+                <button onclick="showPage('hito5')" class="btn-primary">Siguiente</button>
+            </div>
+        </section>
+
+        <!-- HITO 5 -->
+        <section id="hito5" class="page">
+            <button onclick="showPage('indice')" class="text-blue-900 text-xs font-bold mb-8 uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i> Volver</button>
+            <h2 class="serif text-3xl text-slate-900 mb-6">5. La defensa oral</h2>
+            
+            <div class="img-container"><img src="hito5.jpg"></div>
+            
+            <div class="mt-8 space-y-6 text-slate-600 text-justify">
+                <h4 class="text-blue-900 font-bold uppercase text-[10px] tracking-widest">Traducir la complejidad</h4>
+                <p>El último hito fue la exposición. Allí comprendí un límite interesante de los mapas: son excelentes para mostrar relaciones simultáneas, pero la voz humana es lineal. Tuvimos que "romper" la red para armar un relato coherente que explicara nuestra visión sobre la evaluación. Fue el momento donde la teoría se volvió palabra propia.</p>
+            </div>
+
+            <div class="mt-12 flex justify-between">
+                <button onclick="showPage('hito4')" class="text-slate-400 font-bold text-xs uppercase">Anterior</button>
+                <button onclick="showPage('reflexion')" class="btn-primary">Ver Reflexión Final</button>
+            </div>
+        </section>
+
+        <!-- REFLEXIÓN FINAL -->
+        <section id="reflexion" class="page">
+            <h2 class="serif text-4xl text-slate-900 mb-10 text-center">Reflexión Final</h2>
+            
+            <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 space-y-8 text-slate-700 text-lg leading-relaxed text-justify">
+                <p>Al finalizar este recorrido, me doy cuenta de que este portafolio es, en sí mismo, un dispositivo de evaluación formativa. Me obligó a realizar un ejercicio de **metacognición**: no solo tuve que saber sobre evaluación, sino que tuve que comprender cómo aprendí lo que sé.</p>
+                
+                <p>La investigación que realicé sobre Habermas y Kant me enseñó que la autonomía del estudiante es el motor del conocimiento. No esperé a que la verdad viniera del texto de la cátedra, sino que salí a buscarla para que el mapa tuviera sentido para mí y para mi grupo.</p>
+                
+                <p>Trabajar con otros me permitió entender que la evaluación es, ante todo, un proceso social. Discutir, ceder y fundamentar son acciones que hoy valoro como parte esencial de mi formación. Me llevo una pregunta que me acompañará en mi futuro como docente: <b>¿Cómo puedo construir espacios donde mis alumnos también puedan "desarmar" sus propios procesos y aprender de sus errores de jerarquía, tal como lo hice yo en este mapa?</b></p>
+                
+                <div class="pt-6 border-t border-slate-100 text-center">
+                    <p class="text-sm font-bold text-blue-900 uppercase tracking-widest">Ramiro Batibulli · 2026</p>
+                </div>
+            </div>
+
+            <button onclick="showPage('inicio')" class="btn-primary mt-12 w-full">Volver al inicio</button>
+        </section>
+
+    </main>
+
+    <!-- NAVEGACIÓN INFERIOR -->
+    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-slate-900/95 backdrop-blur-md rounded-2xl py-4 px-8 flex justify-around items-center z-50 shadow-2xl">
+        <button onclick="showPage('inicio')" class="text-slate-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-house"></i>
+        </button>
+        <button onclick="showPage('indice')" class="text-slate-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-list-ul"></i>
+        </button>
+        <button onclick="showPage('reflexion')" class="text-slate-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-brain"></i>
+        </button>
+    </nav>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            const selectedPage = document.getElementById(pageId);
+            if(selectedPage) {
+                selectedPage.classList.add('active');
+                window.scrollTo(0, 0);
+            }
+        }
+    </script>
+</body>
+</html>
